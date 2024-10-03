@@ -20,3 +20,7 @@ func (uc *AuthUseCase) RegisterUser(data *entities.User) error {
 func (uc *AuthUseCase) VerifyUser(token, userID string) error {
 	return uc.authService.VerifyUser(token, userID)
 }
+
+func (uc *AuthUseCase) CreateToken(userID string) error {
+	return uc.authService.CreateToken(userID)
+}

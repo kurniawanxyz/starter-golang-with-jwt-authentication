@@ -7,6 +7,7 @@ import (
 	"github.com/kurniawanxzy/backend-olshop/helper"
 	"github.com/kurniawanxzy/backend-olshop/repository"
 	"gorm.io/gorm"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
@@ -24,6 +25,14 @@ func (s *AuthService) RegisterUser(data *entities.User) error {
 		return fmt.Errorf("missing db connection")
 	}
 	return s.db.Transaction(func(tx *gorm.DB) error {
+
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+        if err != nil {
+            return err
+        }
+
+		data.Password = string(hashedPassword)
+
 		if err := s.UserRepository.CreateUser(data); err != nil {
 			tx.Rollback()
 			return err
@@ -87,14 +96,39 @@ func (s *AuthService) VerifyUser(token, userID string) error {
 			return err
 		}
 
-
-
 		tokenVerification.IsUsed = true
 
 		if err := s.TokenVerificationRepository.UpdateToken(tokenVerification); err != nil {
 			tx.Rollback()
 			return err
 		}
+
+		return nil
+	})
+}
+
+func (s *AuthService) CreateToken(userID string) error {
+	if s.db == nil {
+		return fmt.Errorf("missing db connection")
+	}
+
+	return s.db.Transaction(func(tx *gorm.DB) error {
+
+		user, err := s.UserRepository.FindById(userID)
+		
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		
+		token, err := s.TokenVerificationRepository.GenerateToken(userID)
+
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		helper.SendEmail(user.Email, "Email Verification", fmt.Sprintf("<h1>%s</h1>",token))
 
 		return nil
 	})

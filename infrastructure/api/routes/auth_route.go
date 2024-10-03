@@ -58,8 +58,17 @@ func (ar *AuthRoute) VerifyUser(c *fiber.Ctx) error {
 	return helper.HandleResponse(c, fiber.StatusOK, "User verified successfully", nil)
 }
 
+func (ar *AuthRoute) CreateToken(c *fiber.Ctx) error {
+	userID := c.Params("id")
+	
+	if err := ar.AuthUseCase.CreateToken(userID); err != nil {
+		return helper.HandleResponse(c, 500, "Failed to create token verification", err.Error())
+	}
+	return helper.HandleResponse(c, fiber.StatusOK, "Token verification created successfully", nil)
+}
+
 func SetupAuthRoute(r fiber.Router, authUseCase *AuthRoute) {
 	r.Post("/register", authUseCase.RegisterUser)
 	r.Post("/verify", authUseCase.VerifyUser)
-	
+	r.Post("/request-token", authUseCase.CreateToken)
 }

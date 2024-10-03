@@ -9,12 +9,13 @@ import (
 )
 
 type TokenVerification struct {
-    ID        uuid.UUID `gorm:"type:char(36);primaryKey;default:uuid_generate_v4()" json:"id"`
-    UserID    string    `gorm:"type:char(36);not null" json:"user_id"`
-    Token     string    `gorm:"type:varchar(255);not null" json:"token"`
-    CreatedAt time.Time `gorm:"type:timestamp;not null;default:CURRENT_TIMESTAMP" json:"created_at"`
-    ExpiredAt time.Time `gorm:"type:timestamp;not null" json:"expired_at"`
-    IsUsed    bool      `gorm:"type:boolean;default:false" json:"is_used"`
+	ID        uuid.UUID `gorm:"type:char(36);primaryKey;default:uuid_generate_v4()" json:"id"`
+	UserID    string    `gorm:"type:char(36);not null" json:"user_id"`
+	Token     string    `gorm:"type:varchar(255);not null" json:"token"`
+	CreatedAt time.Time `gorm:"type:timestamp;not null;default:CURRENT_TIMESTAMP" json:"created_at"`
+	ExpiredAt time.Time `gorm:"type:timestamp;not null" json:"expired_at"`
+	IsUsed    bool      `gorm:"type:boolean;default:false" json:"is_used"`
+	Type 	  string 	`gorm:"type:enum('email_verification', 'forgot_password');not null;default:'email_verification'" json:"type"`
 	User      User 	`gorm:"foreignKey:UserID;references:ID"`
 }
 

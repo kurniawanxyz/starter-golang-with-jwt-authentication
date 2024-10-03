@@ -40,3 +40,12 @@ func (r *UserRepository) UpdateUser(user *entities.User) error {
 
 	return nil
 }
+
+func (r *UserRepository) FindById(id string) (*entities.User, error) {
+	var user entities.User
+	err := r.db.First(&user, "id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

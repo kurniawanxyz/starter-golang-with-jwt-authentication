@@ -81,6 +81,8 @@ func GetValidationMessages(tag string, field string, param string) string {
 		return fmt.Sprintf("Field %s harus berupa alamat IPv6 yang valid.", field)
 	case "mac":
 		return fmt.Sprintf("Field %s harus berupa alamat MAC yang valid.", field)
+	case "e164":
+		return fmt.Sprintf("Field %s harus berupa nomor telepon yang valid eg: +62XXX", field)
 	// Tambahkan case lainnya sesuai kebutuhan
 	default:
 		return fmt.Sprintf("Field %s memiliki kesalahan: %s.", field, tag)

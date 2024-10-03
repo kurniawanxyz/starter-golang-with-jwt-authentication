@@ -3,7 +3,7 @@ CREATE TABLE token_verifications (
     user_id CHAR(36) NOT NULL,
     token VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
+    expired_at TIMESTAMP NOT NULL,
     is_used BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );

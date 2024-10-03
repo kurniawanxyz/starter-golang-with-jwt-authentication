@@ -3,23 +3,26 @@ package config
 import (
 	"log"
 	"os"
-	"strconv"
-
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
 	AppName string
-	AppPort int
+	AppPort string
 
 	DBHost string
-	DBPort int
+	DBPort string
 	DBUser string
 	DBPass string
 	DBName string
 
 	JWTSecret string
 	APIKey    string
+
+	SMTPHost  string
+	SMTPPort  string
+	SMTPUser  string
+	SMTPPass  string
 }
 
 var ENV *Config
@@ -32,25 +35,19 @@ func Load() {
 		log.Fatalf("Error loading .env file")
 	}
 
-	appPort, err := strconv.Atoi(os.Getenv("APP_PORT"))
-	if err != nil {
-		log.Fatalf("Error converting APP_PORT to int: %v", err)
-	}
-
-	dbPort, err := strconv.Atoi(os.Getenv("DB_PORT"))
-	if err != nil {
-		log.Fatalf("Error converting DB_PORT to int: %v", err)
-	}
-
 	ENV = &Config{
 		AppName:   os.Getenv("APP_NAME"),
-		AppPort:   appPort,
+		AppPort:   os.Getenv("APP_PORT"),
 		DBHost:    os.Getenv("DB_HOST"),
-		DBPort:    dbPort,
+		DBPort:    os.Getenv("DB_PORT"),
 		DBUser:    os.Getenv("DB_USER"),
 		DBPass:    os.Getenv("DB_PASS"),
 		DBName:    os.Getenv("DB_NAME"),
 		JWTSecret: os.Getenv("JWT_SEC"),
 		APIKey:    os.Getenv("API_KEY"),
+		SMTPHost:  os.Getenv("SMTP_HOST"),
+		SMTPPort:  os.Getenv("SMTP_PORT"),
+		SMTPUser:  os.Getenv("SMTP_USER"),
+		SMTPPass:  os.Getenv("SMTP_PASS"),
 	}
 }

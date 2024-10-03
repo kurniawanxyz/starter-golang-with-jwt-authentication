@@ -3,11 +3,13 @@ package service
 import (
 	"fmt"
 	"time"
+
 	"github.com/kurniawanxzy/backend-olshop/domain/entities"
 	"github.com/kurniawanxzy/backend-olshop/helper"
 	"github.com/kurniawanxzy/backend-olshop/repository"
-	"gorm.io/gorm"
+	"github.com/kurniawanxzy/backend-olshop/requests"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type AuthService struct {
@@ -77,6 +79,12 @@ func (s *AuthService) VerifyUser(token, email string) error {
 			tx.Rollback()
 			return fmt.Errorf("token is not for this user")
 		}
+
+		if tokenVerification.Type != "email_verification" {
+			tx.Rollback()
+			return fmt.Errorf("invalid token type")
+		}
+
 		if tokenVerification.User.IsVerified {
 			tx.Rollback()
 			return fmt.Errorf("user already verified")
@@ -155,4 +163,37 @@ func (s *AuthService) CreateToken(email string) error {
 
 		return nil
 	})
+}
+
+func (s *AuthService) Login(data *requests.LoginRequest) (string, error) {
+	if s.db == nil {
+		return "",fmt.Errorf("missing db connection")
+	}
+
+	user, err := s.UserRepository.FindByEmail(data.Email)
+
+	if err != nil {
+		return "",err
+	}
+
+	if user == nil {
+		return "",fmt.Errorf("invalid credentials")
+	}
+
+	if !user.IsVerified {
+		return "",fmt.Errorf("user not verified")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)); err != nil {
+		return "",fmt.Errorf("invalid credentials")
+	}
+
+
+	token, err := helper.GenerateJWT(user)
+
+	if err != nil {
+		return "",err
+	}
+
+	return token,nil
 }

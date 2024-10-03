@@ -76,8 +76,27 @@ func (ar *AuthRoute) CreateToken(c *fiber.Ctx) error {
 	return helper.HandleResponse(c, fiber.StatusOK, "Token verification created successfully", nil)
 }
 
+func (ar *AuthRoute) Login(c *fiber.Ctx) error {
+	data := new(requests.LoginRequest)
+	
+	if err := c.BodyParser(&data); err != nil {
+		return helper.HandleResponse(c, fiber.StatusBadRequest, "Invalid request", err)
+	}
+
+	if err := ar.Validate.Struct(data); err != nil {
+		return helper.HandleValidationMessage(c,err)
+	}
+
+	token, err := ar.AuthUseCase.Login(data)
+	if err != nil {
+		return helper.HandleResponse(c, 400, "Failed to login", err.Error())
+	}
+	return helper.HandleResponse(c, fiber.StatusOK, "Login success", fiber.Map{"token": token})
+}
+
 func SetupAuthRoute(r fiber.Router, authUseCase *AuthRoute) {
 	r.Post("/register", authUseCase.RegisterUser)
 	r.Post("/verify", authUseCase.VerifyUser)
 	r.Post("/request-token", authUseCase.CreateToken)
+	r.Post("/login", authUseCase.Login)
 }

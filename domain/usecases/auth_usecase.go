@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"github.com/kurniawanxzy/backend-olshop/domain/entities"
+	"github.com/kurniawanxzy/backend-olshop/requests"
 	"github.com/kurniawanxzy/backend-olshop/service"
 )
 
@@ -23,4 +24,8 @@ func (uc *AuthUseCase) VerifyUser(token, userID string) error {
 
 func (uc *AuthUseCase) CreateToken(email string) error {
 	return uc.authService.CreateToken(email)
+}
+
+func (uc *AuthUseCase) Login(data *requests.LoginRequest) (string,error) {
+	return uc.authService.Login(data)
 }

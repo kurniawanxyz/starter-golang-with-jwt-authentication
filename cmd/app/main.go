@@ -9,6 +9,7 @@ import (
 	"github.com/kurniawanxzy/backend-olshop/config"
 	"github.com/kurniawanxzy/backend-olshop/domain/usecases"
 	"github.com/kurniawanxzy/backend-olshop/helper"
+	"github.com/kurniawanxzy/backend-olshop/infrastructure/api/middleware"
 	"github.com/kurniawanxzy/backend-olshop/infrastructure/api/routes"
 	"github.com/kurniawanxzy/backend-olshop/infrastructure/database"
 	"github.com/kurniawanxzy/backend-olshop/repository"
@@ -19,8 +20,9 @@ func main() {
 	app := fiber.New()
 	config.Load()
 	database.Load()
-	app.Use(logger.New())
 
+	app.Use(logger.New())
+	app.Use(middleware.ApiKeyMiddleware)
 
 
 	app.Get("/", func(c *fiber.Ctx) error {

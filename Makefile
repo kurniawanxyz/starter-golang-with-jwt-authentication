@@ -67,3 +67,8 @@ clean:
 migrate-version:
 	@echo "Checking current migration version..."
 	$(MIGRATE_CMD) -path $(MIGRATIONS_DIR) -database "$(DB_URL)" version
+
+.PHONY: run
+run:
+	@echo "Running application..."
+	go run cmd/app/main.go

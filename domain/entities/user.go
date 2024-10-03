@@ -17,7 +17,8 @@ type User struct {
 	UpdatedAt  time.Time      `gorm:"type:timestamp;default:CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" json:"updated_at"`
 	DeletedAt  gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 	IsVerified bool           `gorm:"type:boolean;default:false" json:"is_verified"`
-	Tokens    []TokenVerification `gorm:"foreignKey:UserID;references:ID"`
+	Role       string         `gorm:"type:varchar(50);not null;default:'user'" json:"role"`
+	Tokens     []TokenVerification `gorm:"foreignKey:UserID;references:ID"`
 }
 
 func (user *User) BeforeCreate(tx *gorm.DB) (err error) {

@@ -61,4 +61,5 @@ func (ar *AuthRoute) VerifyUser(c *fiber.Ctx) error {
 func SetupAuthRoute(r fiber.Router, authUseCase *AuthRoute) {
 	r.Post("/register", authUseCase.RegisterUser)
 	r.Post("/verify", authUseCase.VerifyUser)
+	
 }

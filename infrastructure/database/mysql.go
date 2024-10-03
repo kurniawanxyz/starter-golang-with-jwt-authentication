@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/kurniawanxzy/backend-olshop/config"
+	"github.com/kurniawanxzy/backend-olshop/domain/entities"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -23,6 +24,8 @@ func Load() {
 	if err != nil {
 		log.Fatal("Failed to connect to database: ", err)
 	}
+
+	db.AutoMigrate(&entities.User{}, &entities.TokenVerification{})
 
 	DB = db
 	fmt.Println("Database connection established")

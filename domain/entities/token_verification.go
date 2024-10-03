@@ -15,6 +15,7 @@ type TokenVerification struct {
     CreatedAt time.Time `gorm:"type:timestamp;not null;default:CURRENT_TIMESTAMP" json:"created_at"`
     ExpiredAt time.Time `gorm:"type:timestamp;not null" json:"expired_at"`
     IsUsed    bool      `gorm:"type:boolean;default:false" json:"is_used"`
+	User      User 	`gorm:"foreignKey:UserID;references:ID"`
 }
 
 func (token *TokenVerification) BeforeCreate(tx *gorm.DB) (err error) {

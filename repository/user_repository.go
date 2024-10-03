@@ -1,6 +1,7 @@
 package repository
 
 import (
+
 	"github.com/kurniawanxzy/backend-olshop/domain/entities"
 	"gorm.io/gorm"
 )
@@ -29,4 +30,13 @@ func (r *UserRepository) FindByEmail(email string) (*entities.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (r *UserRepository) UpdateUser(user *entities.User) error {
+	err := r.db.Save(&user).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

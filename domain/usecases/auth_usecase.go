@@ -16,3 +16,7 @@ func NewAuthUseCase(authService *service.AuthService) *AuthUseCase {
 func (uc *AuthUseCase) RegisterUser(data *entities.User) error {
 	return uc.authService.RegisterUser(data)
 }
+
+func (uc *AuthUseCase) VerifyUser(token, userID string) error {
+	return uc.authService.VerifyUser(token, userID)
+}

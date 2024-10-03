@@ -6,6 +6,7 @@ import (
 	"github.com/kurniawanxzy/backend-olshop/domain/entities"
 	"github.com/kurniawanxzy/backend-olshop/domain/usecases"
 	"github.com/kurniawanxzy/backend-olshop/helper"
+	"github.com/kurniawanxzy/backend-olshop/requests"
 )
 
 type AuthRoute struct {
@@ -40,6 +41,24 @@ func (ar *AuthRoute) RegisterUser(c *fiber.Ctx) error {
 	return helper.HandleResponse(c, fiber.StatusCreated, "User registered successfully", nil)
 }
 
+func (ar *AuthRoute) VerifyUser(c *fiber.Ctx) error {
+	token := new(requests.VerifyUserRequest)
+	
+	if err := c.BodyParser(&token); err != nil {
+		return helper.HandleResponse(c, fiber.StatusBadRequest, "Invalid request", err)
+	}
+
+	if err := ar.Validate.Struct(token); err != nil {
+		return helper.HandleValidationMessage(c,err)
+	}
+	
+	if err := ar.AuthUseCase.VerifyUser(token.Token, token.UserId); err != nil {
+		return helper.HandleResponse(c, 500, "Failed to verify user", err.Error())
+	}
+	return helper.HandleResponse(c, fiber.StatusOK, "User verified successfully", nil)
+}
+
 func SetupAuthRoute(r fiber.Router, authUseCase *AuthRoute) {
 	r.Post("/register", authUseCase.RegisterUser)
+	r.Post("/verify", authUseCase.VerifyUser)
 }

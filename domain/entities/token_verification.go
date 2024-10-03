@@ -16,6 +16,7 @@ type TokenVerification struct {
 	ExpiredAt time.Time `gorm:"type:timestamp;not null" json:"expired_at"`
 	IsUsed    bool      `gorm:"type:boolean;default:false" json:"is_used"`
 	Type 	  string 	`gorm:"type:enum('email_verification', 'forgot_password');not null;default:'email_verification'" json:"type"`
+	
 	User      User 	`gorm:"foreignKey:UserID;references:ID"`
 }
 

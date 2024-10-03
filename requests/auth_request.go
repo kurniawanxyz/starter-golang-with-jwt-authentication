@@ -14,5 +14,10 @@ type LoginRequest struct {
 
 type VerifyUserRequest struct {
 	Token  string `json:"token" validate:"required"`
-	UserId string `json:"user_id" validate:"required" `
+	Email string `json:"email" validate:"required,email"`
+}
+
+type CreateTokenRequest struct {
+	Email string `json:"email" validate:"required,email"`
+	Type string `json:"type" validate:"required,oneof=email_verification forgot_password"`
 }

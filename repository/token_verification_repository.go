@@ -22,11 +22,15 @@ func (r *TokenVerificationRepository) GenerateToken(userId string) (string, erro
 	return token.Token, nil
 }
 
-func (r *TokenVerificationRepository) FindToken(token, userId string) (*entities.TokenVerification, error) {
+func (r *TokenVerificationRepository) FindToken(token, email string) (*entities.TokenVerification, error) {
 	var tokenVerification entities.TokenVerification
-	if err := r.db.Preload("User").First(&tokenVerification,"token = ?", token).Error; err != nil {
-		return nil, err
-	}
+
+    if err := r.db.Preload("User").
+        Where("token = ? AND user_id = (SELECT id FROM users WHERE email = ?)", token, email).
+        Order("created_at desc").
+        First(&tokenVerification).Error; err != nil {
+        return nil, err
+    }
 	return &tokenVerification, nil
 }
 
@@ -35,4 +39,12 @@ func (r *TokenVerificationRepository) UpdateToken(token *entities.TokenVerificat
 		return err
 	}
 	return nil
+}
+
+func (r *TokenVerificationRepository) FindLatestToken(userId string) (*entities.TokenVerification, error) {
+	var tokenVerification entities.TokenVerification
+	if err := r.db.Preload("User").Order("created_at desc").First(&tokenVerification, "user_id = ?", userId).Error; err != nil {
+		return nil, err
+	}
+	return &tokenVerification, nil
 }

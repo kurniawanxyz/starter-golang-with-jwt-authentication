@@ -12,7 +12,7 @@ func ApiKeyMiddleware(c *fiber.Ctx) error {
 		apiKey := c.Get("x-api-key")
 		if strings.Compare(apiKey, config.ENV.APIKey) != 0 {
 			
-			return helper.HandleResponse(c, fiber.StatusUnauthorized, "Unauthorized", config.ENV.APIKey)
+			return helper.HandleResponse(c, fiber.StatusUnauthorized, "Unauthorized", nil)
 		}
 		return c.Next()
 }

@@ -52,17 +52,26 @@ func (ar *AuthRoute) VerifyUser(c *fiber.Ctx) error {
 		return helper.HandleValidationMessage(c,err)
 	}
 	
-	if err := ar.AuthUseCase.VerifyUser(token.Token, token.UserId); err != nil {
+	if err := ar.AuthUseCase.VerifyUser(token.Token, token.Email); err != nil {
 		return helper.HandleResponse(c, 500, "Failed to verify user", err.Error())
 	}
 	return helper.HandleResponse(c, fiber.StatusOK, "User verified successfully", nil)
 }
 
 func (ar *AuthRoute) CreateToken(c *fiber.Ctx) error {
-	userID := c.Params("id")
 	
-	if err := ar.AuthUseCase.CreateToken(userID); err != nil {
-		return helper.HandleResponse(c, 500, "Failed to create token verification", err.Error())
+	data := new(requests.CreateTokenRequest)
+	
+	if err := c.BodyParser(&data); err != nil {
+		return helper.HandleResponse(c, fiber.StatusBadRequest, "Invalid request", err)
+	}
+
+	if err := ar.Validate.Struct(data); err != nil {
+		return helper.HandleValidationMessage(c,err)
+	}
+
+	if err := ar.AuthUseCase.CreateToken(data.Email); err != nil {
+		return helper.HandleResponse(c, 400, "Failed to create token verification", err.Error())
 	}
 	return helper.HandleResponse(c, fiber.StatusOK, "Token verification created successfully", nil)
 }

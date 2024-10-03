@@ -21,6 +21,6 @@ func (uc *AuthUseCase) VerifyUser(token, userID string) error {
 	return uc.authService.VerifyUser(token, userID)
 }
 
-func (uc *AuthUseCase) CreateToken(userID string) error {
-	return uc.authService.CreateToken(userID)
+func (uc *AuthUseCase) CreateToken(email string) error {
+	return uc.authService.CreateToken(email)
 }

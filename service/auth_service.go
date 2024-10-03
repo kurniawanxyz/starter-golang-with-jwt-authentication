@@ -50,13 +50,13 @@ func (s *AuthService) RegisterUser(data *entities.User) error {
 	})
 }
 
-func (s *AuthService) VerifyUser(token, userID string) error {
+func (s *AuthService) VerifyUser(token, email string) error {
 	if s.db == nil {
 		return fmt.Errorf("missing db connection")
 	}
 
 	return s.db.Transaction(func(tx *gorm.DB) error {
-		tokenVerification, err:= s.TokenVerificationRepository.FindToken(token, userID)
+		tokenVerification, err:= s.TokenVerificationRepository.FindToken(token, email)
 
 		if err != nil {
 			tx.Rollback()
@@ -73,7 +73,7 @@ func (s *AuthService) VerifyUser(token, userID string) error {
 			return fmt.Errorf("token has been used")
 		}
 
-		if tokenVerification.UserID != userID {
+		if tokenVerification.User.Email != email {
 			tx.Rollback()
 			return fmt.Errorf("token is not for this user")
 		}
@@ -107,21 +107,44 @@ func (s *AuthService) VerifyUser(token, userID string) error {
 	})
 }
 
-func (s *AuthService) CreateToken(userID string) error {
+func (s *AuthService) CreateToken(email string) error {
 	if s.db == nil {
 		return fmt.Errorf("missing db connection")
 	}
 
 	return s.db.Transaction(func(tx *gorm.DB) error {
 
-		user, err := s.UserRepository.FindById(userID)
+		user, err := s.UserRepository.FindByEmail(email)
+
+		if user == nil {
+			tx.Rollback()
+			return fmt.Errorf("user not found")
+		}
+
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		tokenLatest, err := s.TokenVerificationRepository.FindLatestToken(user.ID.String())
 		
 		if err != nil {
 			tx.Rollback()
 			return err
 		}
+
+		if tokenLatest.ExpiredAt.After(time.Now()) {
+			tx.Rollback()
+			return fmt.Errorf("token still valid")
+		}
+
+		if tokenLatest.IsUsed {
+			tx.Rollback()
+			return fmt.Errorf("token has been used")
+		}
+
 		
-		token, err := s.TokenVerificationRepository.GenerateToken(userID)
+		token, err := s.TokenVerificationRepository.GenerateToken(user.ID.String())
 
 		if err != nil {
 			tx.Rollback()

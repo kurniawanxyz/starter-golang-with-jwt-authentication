@@ -13,9 +13,10 @@ func NewTokenVerificationRepository(db *gorm.DB) *TokenVerificationRepository {
 	return &TokenVerificationRepository{db}
 }
 
-func (r *TokenVerificationRepository) GenerateToken(userId string) (string, error) {
+func (r *TokenVerificationRepository) GenerateToken(userId, tokenType string) (string, error) {
 	var token entities.TokenVerification
 	token.UserID = userId
+	token.Type = tokenType
 	if err := r.db.Create(&token).Error; err != nil {
 		return "", err
 	}

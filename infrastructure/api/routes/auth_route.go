@@ -6,6 +6,7 @@ import (
 	"github.com/kurniawanxzy/backend-olshop/domain/entities"
 	"github.com/kurniawanxzy/backend-olshop/domain/usecases"
 	"github.com/kurniawanxzy/backend-olshop/helper"
+	"github.com/kurniawanxzy/backend-olshop/infrastructure/api/middleware"
 	"github.com/kurniawanxzy/backend-olshop/requests"
 )
 
@@ -70,7 +71,7 @@ func (ar *AuthRoute) CreateToken(c *fiber.Ctx) error {
 		return helper.HandleValidationMessage(c,err)
 	}
 
-	if err := ar.AuthUseCase.CreateToken(data.Email); err != nil {
+	if err := ar.AuthUseCase.CreateToken(data.Email, data.Type); err != nil {
 		return helper.HandleResponse(c, 400, "Failed to create token verification", err.Error())
 	}
 	return helper.HandleResponse(c, fiber.StatusOK, "Token verification created successfully", nil)
@@ -94,9 +95,32 @@ func (ar *AuthRoute) Login(c *fiber.Ctx) error {
 	return helper.HandleResponse(c, fiber.StatusOK, "Login success", fiber.Map{"token": token})
 }
 
+func (ar *AuthRoute) ResetPassword(c *fiber.Ctx) error {
+	data := new(requests.ResetPasswordRequest)
+	
+	if err := c.BodyParser(&data); err != nil {
+		return helper.HandleResponse(c, fiber.StatusBadRequest, "Invalid request", err)
+	}
+
+	if err := ar.Validate.Struct(data); err != nil {
+		return helper.HandleValidationMessage(c,err)
+	}
+
+	user, err := helper.GetUser(c)
+	if err != nil {
+		return helper.HandleResponse(c, fiber.StatusUnauthorized, "Unauthorized", err)
+	}
+
+	if err := ar.AuthUseCase.ResetPassword(data, user.User); err != nil {
+		return helper.HandleResponse(c, 400, "Failed to reset password", err.Error())
+	}
+	return helper.HandleResponse(c, fiber.StatusOK, "Password reset success", nil)
+}
+
 func SetupAuthRoute(r fiber.Router, authUseCase *AuthRoute) {
 	r.Post("/register", authUseCase.RegisterUser)
 	r.Post("/verify", authUseCase.VerifyUser)
 	r.Post("/request-token", authUseCase.CreateToken)
 	r.Post("/login", authUseCase.Login)
+	r.Use(middleware.AuthMiddleware()).Post("/reset-password", authUseCase.ResetPassword)
 }

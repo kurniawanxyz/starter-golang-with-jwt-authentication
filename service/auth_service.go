@@ -40,7 +40,7 @@ func (s *AuthService) RegisterUser(data *entities.User) error {
 			return err
 		}
 
-		token, err := s.TokenVerificationRepository.GenerateToken(data.ID.String())
+		token, err := s.TokenVerificationRepository.GenerateToken(data.ID.String(), "email_verification")
 
 		if err != nil {
 			tx.Rollback()
@@ -115,7 +115,7 @@ func (s *AuthService) VerifyUser(token, email string) error {
 	})
 }
 
-func (s *AuthService) CreateToken(email string) error {
+func (s *AuthService) CreateToken(email, tokenType string) error {
 	if s.db == nil {
 		return fmt.Errorf("missing db connection")
 	}
@@ -145,14 +145,8 @@ func (s *AuthService) CreateToken(email string) error {
 			tx.Rollback()
 			return fmt.Errorf("token still valid")
 		}
-
-		if tokenLatest.IsUsed {
-			tx.Rollback()
-			return fmt.Errorf("token has been used")
-		}
-
 		
-		token, err := s.TokenVerificationRepository.GenerateToken(user.ID.String())
+		token, err := s.TokenVerificationRepository.GenerateToken(user.ID.String(), tokenType)
 
 		if err != nil {
 			tx.Rollback()
@@ -196,4 +190,55 @@ func (s *AuthService) Login(data *requests.LoginRequest) (string, error) {
 	}
 
 	return token,nil
+}
+
+func (s *AuthService) ResetPassword(data *requests.ResetPasswordRequest, user *entities.User) error {
+	if s.db == nil {
+		return fmt.Errorf("missing db connection")
+	}
+
+	return s.db.Transaction(func(tx *gorm.DB) error {
+
+		if user == nil {
+			tx.Rollback()
+			return fmt.Errorf("user not found")
+		}
+		
+		token, err := s.TokenVerificationRepository.FindToken(data.Token, user.Email)
+
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		if token.IsUsed {
+			tx.Rollback()
+			return fmt.Errorf("token has been used")
+		}
+
+		if token.Type != "forgot_password" {
+			tx.Rollback()
+			return fmt.Errorf("invalid token type")
+		}
+
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		user.Password = string(hashedPassword)
+
+		if err := s.UserRepository.UpdateUser(user); err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		token.IsUsed = true
+		if err := s.TokenVerificationRepository.UpdateToken(token); err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		return nil
+	})
 }
